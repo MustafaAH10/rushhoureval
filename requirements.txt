@@ -1,0 +1,36 @@
+# Core Python libraries (usually included with Python)
+# json - built-in
+# os - built-in  
+# csv - built-in
+# time - built-in
+# re - built-in
+# hashlib - built-in
+# pickle - built-in
+# random - built-in
+# pathlib - built-in
+# typing - built-in
+# collections - built-in
+# datetime - built-in
+
+# Data visualization and plotting
+matplotlib>=3.5.0
+
+# Scientific computing and arrays  
+numpy>=1.21.0
+
+# Machine Learning and NLP
+torch>=2.0.0
+transformers>=4.30.0
+
+# Optional: For CUDA support (if using GPU)
+# torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# Development and utilities
+tqdm>=4.64.0
+
+# Optional: For better performance with transformers
+accelerate>=0.20.0
+safetensors>=0.3.0
+
+# Optional: For model optimization
+optimum>=1.8.0
