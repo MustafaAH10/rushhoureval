@@ -16,7 +16,7 @@ class GPT5RushHourInference:
         
         Args:
             api_key: OpenAI API key (if None, will use OPENAI_API_KEY env var)
-            model_name: GPT model to use ("gpt-5")
+            model_name: GPT model to use ("gpt-5", "gpt-5-mini", "gpt-5-nano")
         """
         self.model_name = model_name
         
@@ -26,6 +26,17 @@ class GPT5RushHourInference:
         else:
             # Will use OPENAI_API_KEY environment variable
             self.client = OpenAI()
+
+        # System prompt for Rush Hour puzzles (matching the non-GPT5 version)
+        self.system_prompt = """You are an expert puzzle solver specializing in Rush Hour puzzles. Your task is to find the optimal sequence of moves to move the car 'C' to the TARGET position.
+
+Key Instructions:
+1. A 1-indexed coordinate system is being used
+2. Each piece (car or blocker) can only move UP, DOWN, LEFT, or RIGHT by exactly one square
+3. Pieces CANNOT move outside the grid or into occupied squares at any instant
+4. Provide your solution in the exact format requested
+
+Be precise with coordinates and piece movements. Think logically about the sequence of moves needed."""
 
     def create_puzzle_prompt_from_json(self, puzzle_metadata: Dict[str, Any]) -> str:
         """
@@ -56,36 +67,33 @@ class GPT5RushHourInference:
                 if pos:
                     blockers.append(f"{piece_name} at [{pos[0]},{pos[1]}]")
         
-        prompt = f"""You are an expert puzzle solver. Solve this 3x3 Rush Hour puzzle by finding the optimal sequence of moves.
+        prompt = f"""Task: Solve this 3x3 Rush Hour puzzle - move car "C" from position [{car_position[0]},{car_position[1]}] to the TARGET at position [{exit_position[0]},{exit_position[1]}] given the position of the blockers below.
 
-PUZZLE GOAL: Move car "C" from position [{car_position[0]},{car_position[1]}] to the TARGET at position [{exit_position[0]},{exit_position[1]}].
-
-CURRENT GRID STATE (JSON format):
+Current Grid State (JSON format):
 {grid_json}
 
-CURRENT PIECES:
+Current Pieces:
 - Car "C": Position [{car_position[0]},{car_position[1]}]
 - Blockers: {', '.join(blockers) if blockers else 'None'}
 - TARGET: Position [{exit_position[0]},{exit_position[1]}]
 
-RULES:
-1. Any piece can move UP, DOWN, LEFT, or RIGHT by exactly one square
-2. Pieces cannot move outside the 3x3 grid boundaries
-3. Pieces cannot move into squares occupied by other pieces
-4. No two pieces can occupy the same square at any time
-5. Goal: Move car "C" to the TARGET position
+Rules:
+- Any piece can move UP, DOWN, LEFT, or RIGHT by exactly one square
+- Pieces cannot move outside the 3x3 grid
+- Pieces cannot move into occupied squares
+- No two pieces can occupy the same square at any instant
+- Goal: Move car "C" to the TARGET position
 
-COORDINATE SYSTEM: [row,col] format where [1,1] is top-left, [3,3] is bottom-right
+Coordinate System: [row,col] format where [1,1] is top-left, [3,3] is bottom-right
 
-Think through this step-by-step and provide your solution in this exact format:
-
+Provide your solution as:
 <solution>
 Step 1: [PIECE] [start_position] -> [end_position]
 Step 2: [PIECE] [start_position] -> [end_position]
 ...
 </solution>
 
-Example:
+Example response format:
 <solution>
 Step 1: C [2,1] -> [2,2]
 Step 2: B1 [1,3] -> [1,2]  
@@ -100,7 +108,7 @@ Step 3: C [2,2] -> [1,2]
         
         Args:
             prompt: Input prompt
-            reasoning_effort: "low", "medium", "high" - controls reasoning depth
+            reasoning_effort: "minimal", "low", "medium", "high" - controls reasoning depth
             text_verbosity: "low", "medium", "high" - controls output detail
             
         Returns:
@@ -109,9 +117,12 @@ Step 3: C [2,2] -> [1,2]
         try:
             print(f"🧠 Reasoning effort: {reasoning_effort}, Text verbosity: {text_verbosity}")
             
+            # Combine system prompt with user prompt for GPT-5 responses API
+            full_prompt = f"{self.system_prompt}\n\n{prompt}"
+            
             response = self.client.responses.create(
                 model=self.model_name,
-                input=prompt,
+                input=full_prompt,
                 reasoning={"effort": reasoning_effort},
                 text={"verbosity": text_verbosity}
             )
@@ -552,11 +563,11 @@ def main():
     inference.run_inference_on_dataset(
         dataset_path=dataset_path,
         output_path=output_path,
-        max_puzzles=5,  # Start with 5 puzzles for testing GPT-5
+        max_puzzles=150,  # Start with 5 puzzles for testing GPT-5
         start_puzzle=1,
         delay_between_requests=2.0,  # 2 second delay for GPT-5
-        reasoning_effort="medium",   # "low", "medium", "high"
-        text_verbosity="low"      # "low", "medium", "high"
+        reasoning_effort="medium",   # "minimal", "low", "medium", "high"
+        text_verbosity="low"         # "low", "medium", "high"
     )
     
     print("✅ Inference pipeline completed!")

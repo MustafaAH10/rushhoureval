@@ -25,7 +25,7 @@ class QwenRushHourInference:
         self.tokenizer = None
         
         # System prompt for Rush Hour puzzles
-        self.system_prompt = """You are an expert puzzle solver specializing in Rush Hour puzzles. Your task is to find the optimal solution to move the car 'C' to the TARGET position.
+        self.system_prompt = """You are an expert puzzle solver specializing in Rush Hour puzzles. Your task is to find the optimal sequence of moves to move the car 'C' to the TARGET position.
 
 Key Instructions:
 1. A 1-indexed coordinate system is being used
@@ -97,7 +97,7 @@ Be precise with coordinates and piece movements. Think logically about the seque
                 if pos:
                     blockers.append(f"{piece_name} at [{pos[0]},{pos[1]}]")
         
-        prompt = f"""Task: Solve this 3x3 Rush Hour puzzle. Move car "C" from position [{car_position[0]},{car_position[1]}] to the TARGET at position [{exit_position[0]},{exit_position[1]}].
+        prompt = f"""Task: Solve this 3x3 Rush Hour puzzle - move car "C" from position [{car_position[0]},{car_position[1]}] to the TARGET at position [{exit_position[0]},{exit_position[1]}] given the position of the blockers below.
 
 Current Grid State (JSON format):
 {grid_json}

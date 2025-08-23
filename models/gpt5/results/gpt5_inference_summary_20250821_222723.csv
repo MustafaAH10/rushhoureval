@@ -1,6 +1,0 @@
-puzzle_num,puzzle_folder,difficulty,num_blockers,optimal_solution_length,predicted_solution_length,length_matches_optimal,solution_found,processing_time_seconds,input_tokens,reasoning_tokens,output_tokens,total_tokens,has_reasoning,reasoning_length_chars,timestamp
-1,puzzle1,easy,2,4,4,True,True,25.48,350,0,1997,2347,False,0,2025-08-21T22:27:48.567686
-2,puzzle2,easy,2,1,1,True,True,9.36,350,0,412,762,False,0,2025-08-21T22:27:59.931425
-3,puzzle3,easy,2,2,2,True,True,9.36,351,0,556,907,False,0,2025-08-21T22:28:11.292291
-4,puzzle4,easy,2,3,3,True,True,11.59,351,0,765,1116,False,0,2025-08-21T22:28:24.882221
-5,puzzle5,easy,2,2,2,True,True,6.49,350,0,556,906,False,0,2025-08-21T22:28:33.370611
