@@ -1,0 +1,11 @@
+Puzzle: puzzle72
+Configuration ID: 72
+Total moves: 2
+Exit position: [2,4]
+Difficulty: medium (1 1x1 blockers, 2 2x1 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: C [2,2] -> [2,3]
+Step 2: C [2,3] -> [2,4]

@@ -1,0 +1,12 @@
+Puzzle: puzzle50
+Configuration ID: 50
+Total moves: 2
+Exit position: [2,3]
+Transformation: original
+Difficulty: easy (3 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: C [2,1] -> [2,2]
+Step 2: C [2,2] -> [2,3]

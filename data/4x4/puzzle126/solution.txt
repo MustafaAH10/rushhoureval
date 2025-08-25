@@ -1,0 +1,13 @@
+Puzzle: puzzle126
+Configuration ID: 126
+Total moves: 4
+Exit position: [2,4]
+Difficulty: hard (0 1x1 blockers, 3 2x1 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: H3 [(1, 4), (2, 4)] -> [(1, 3), (2, 3)]
+Step 2: C [4,3] -> [3,3]
+Step 3: C [3,3] -> [3,4]
+Step 4: C [3,4] -> [2,4]

@@ -1,0 +1,14 @@
+Puzzle: puzzle116
+Configuration ID: 116
+Total moves: 4
+Exit position: [2,3]
+Transformation: original
+Difficulty: hard (7 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B3 [2,1] -> [3,1]
+Step 2: B1 [2,2] -> [2,1]
+Step 3: B7 [2,3] -> [2,2]
+Step 4: C [3,3] -> [2,3]

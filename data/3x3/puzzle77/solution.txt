@@ -1,0 +1,11 @@
+Puzzle: puzzle77
+Configuration ID: 77
+Total moves: 1
+Exit position: [2,3]
+Transformation: original
+Difficulty: medium (4 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: C [2,2] -> [2,3]

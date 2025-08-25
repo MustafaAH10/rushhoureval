@@ -1,0 +1,13 @@
+Puzzle: puzzle105
+Configuration ID: 105
+Total moves: 3
+Exit position: [2,3]
+Transformation: original
+Difficulty: hard (6 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B5 [2,2] -> [3,2]
+Step 2: B2 [2,3] -> [2,2]
+Step 3: C [3,3] -> [2,3]

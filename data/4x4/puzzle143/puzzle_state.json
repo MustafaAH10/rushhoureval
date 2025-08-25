@@ -1,0 +1,106 @@
+{
+  "grid": [
+    [
+      ".",
+      "C",
+      ".",
+      "H3"
+    ],
+    [
+      ".",
+      ".",
+      "H4",
+      "H3"
+    ],
+    [
+      "H2",
+      "H2",
+      "H4",
+      "."
+    ],
+    [
+      ".",
+      "H1",
+      "H1",
+      "."
+    ]
+  ],
+  "car_position": [
+    1,
+    2
+  ],
+  "exit_position": [
+    2,
+    4
+  ],
+  "pieces": {
+    "C": {
+      "type": "car",
+      "position": [
+        1,
+        2
+      ]
+    },
+    "H3": {
+      "type": "2x1_vertical_blocker",
+      "positions": [
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ]
+      ]
+    },
+    "H4": {
+      "type": "2x1_vertical_blocker",
+      "positions": [
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          3
+        ]
+      ]
+    },
+    "H2": {
+      "type": "2x1_horizontal_blocker",
+      "positions": [
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ]
+      ]
+    },
+    "H1": {
+      "type": "2x1_horizontal_blocker",
+      "positions": [
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ]
+      ]
+    }
+  },
+  "puzzle_info": {
+    "difficulty": "hard",
+    "num_1x1_blockers": 0,
+    "num_2x1_blockers": 4,
+    "total_moves_in_solution": 5,
+    "grid_size": "4x4",
+    "coordinate_system": "1-indexed, [row,col] format where [1,1] is top-left"
+  },
+  "prompt": "Task: You have been given a 4x4 Rush Hour puzzle above which you need to solve. Move car \"C\" from position [1,2] to the TARGET at position [2,4].\n\nCurrent Pieces:\n- Car \"C\": Position [1,2]\n- 1x1 Blockers: None\n- 2x1 Blockers: H3 (vertical) at [1,4], [2,4], H4 (vertical) at [2,3], [3,3], H2 (horizontal) at [3,1], [3,2], H1 (horizontal) at [4,2], [4,3]\n- TARGET: Position [2,4]\n\nRules:\n- Any piece can move UP, DOWN, LEFT, or RIGHT by exactly one square\n- For 2x1 blockers: The entire piece moves together as a unit\n- Pieces cannot move outside the 4x4 grid\n- Pieces cannot move into occupied squares\n- No two pieces can occupy the same square\n- Goal: Move car \"C\" to the TARGET position\n\nCoordinate System: [row,col] format where [1,1] is top-left, [4,4] is bottom-right\n\nProvide your solution as:\n<solution>\nStep 1: [PIECE] [start_position] -> [end_position]\nStep 2: [PIECE] [start_position] -> [end_position]\n...\n</solution>\n\nFor 1x1 pieces (car \"C\" and blockers \"B1\", \"B2\", etc.):\n- Use single coordinate: C [2,1] -> [2,2]\n\nFor 2x1 pieces (blockers \"H1\", \"H2\", etc.):\n- List both coordinates: H1 [[1,1],[1,2]] -> [[2,1],[2,2]]\n\nExample response format:\n<solution>\nStep 1: C [2,1] -> [2,2]\nStep 2: H1 [[1,3],[1,4]] -> [[2,3],[2,4]]  \nStep 3: B1 [3,2] -> [3,1]\nStep 4: C [2,2] -> [2,4]\n</solution>"
+}

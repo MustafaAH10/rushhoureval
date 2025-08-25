@@ -1,0 +1,59 @@
+{
+  "grid": [
+    [
+      ".",
+      ".",
+      "."
+    ],
+    [
+      "C",
+      "B1",
+      "."
+    ],
+    [
+      "B2",
+      ".",
+      "."
+    ]
+  ],
+  "car_position": [
+    2,
+    1
+  ],
+  "exit_position": [
+    2,
+    3
+  ],
+  "pieces": {
+    "C": {
+      "type": "car",
+      "position": [
+        2,
+        1
+      ]
+    },
+    "B1": {
+      "type": "blocker",
+      "position": [
+        2,
+        2
+      ]
+    },
+    "B2": {
+      "type": "blocker",
+      "position": [
+        3,
+        1
+      ]
+    }
+  },
+  "puzzle_info": {
+    "difficulty": "easy",
+    "num_blockers": 2,
+    "total_moves_in_solution": 3,
+    "transformation": "original",
+    "grid_size": "3x3",
+    "coordinate_system": "1-indexed, [row,col] format where [1,1] is top-left"
+  },
+  "prompt": "Task: Solve this 3x3 Rush Hour puzzle. Move car \"C\" from position [2,1] to the TARGET at position [2,3].\n\nCurrent Grid State (JSON format):\n[[\".\",\".\",\".\"],[\"C\",\"B1\",\".\"],[\"B2\",\".\",\".\"]]\n\nCurrent Pieces:\n- Car \"C\": Position [2,1]\n- Blockers: B1 at [2,2], B2 at [3,1]\n- TARGET: Position [2,3]\n\nRules:\n- Any piece can move UP, DOWN, LEFT, or RIGHT by exactly one square\n- Pieces cannot move outside the 3x3 grid\n- Pieces cannot move into occupied squares\n- No two pieces can occupy the same square\n- Goal: Move car \"C\" to the TARGET position\n\nCoordinate System: [row,col] format where [1,1] is top-left, [3,3] is bottom-right\n\nProvide your solution as:\n<solution>\nStep 1: [PIECE] [start_position] -> [end_position]\nStep 2: [PIECE] [start_position] -> [end_position]\n...\n</solution>\n\nExample response format:\n<solution>\nStep 1: C [2,1] -> [2,2]\nStep 2: B1 [1,3] -> [1,2]  \nStep 3: C [2,2] -> [1,2]\n</solution>\n"
+}

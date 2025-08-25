@@ -1,0 +1,11 @@
+Puzzle: puzzle68
+Configuration ID: 68
+Total moves: 2
+Exit position: [2,4]
+Difficulty: medium (3 1x1 blockers, 2 2x1 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: H1 [(2, 3), (2, 4)] -> [(2, 2), (2, 3)]
+Step 2: C [3,4] -> [2,4]

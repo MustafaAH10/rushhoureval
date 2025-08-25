@@ -1,0 +1,14 @@
+Puzzle: puzzle114
+Configuration ID: 114
+Total moves: 5
+Exit position: [2,4]
+Difficulty: hard (1 1x1 blockers, 3 2x1 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: H1 [(1, 3), (2, 3)] -> [(2, 3), (3, 3)]
+Step 2: H1 [(2, 3), (3, 3)] -> [(2, 2), (3, 2)]
+Step 3: H3 [(2, 4), (3, 4)] -> [(2, 3), (3, 3)]
+Step 4: C [4,4] -> [3,4]
+Step 5: C [3,4] -> [2,4]

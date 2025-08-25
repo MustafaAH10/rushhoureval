@@ -1,0 +1,13 @@
+Puzzle: puzzle24
+Configuration ID: 24
+Total moves: 4
+Exit position: [2,4]
+Difficulty: easy (4 1x1 blockers, 0 2x1 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B1 [2,4] -> [1,4]
+Step 2: C [3,2] -> [2,2]
+Step 3: C [2,2] -> [2,3]
+Step 4: C [2,3] -> [2,4]

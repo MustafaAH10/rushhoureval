@@ -1,0 +1,11 @@
+Puzzle: puzzle59
+Configuration ID: 59
+Total moves: 2
+Exit position: [2,4]
+Difficulty: medium (1 1x1 blockers, 2 2x1 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: H2 [(2, 4), (3, 4)] -> [(3, 4), (4, 4)]
+Step 2: C [2,3] -> [2,4]

@@ -1,0 +1,18 @@
+Puzzle: puzzle104
+Configuration ID: 104
+Total moves: 8
+Exit position: [2,3]
+Transformation: original
+Difficulty: hard (6 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B3 [2,2] -> [3,2]
+Step 2: B1 [1,2] -> [2,2]
+Step 3: C [1,1] -> [1,2]
+Step 4: B2 [2,1] -> [1,1]
+Step 5: B1 [2,2] -> [2,1]
+Step 6: C [1,2] -> [2,2]
+Step 7: B6 [2,3] -> [3,3]
+Step 8: C [2,2] -> [2,3]

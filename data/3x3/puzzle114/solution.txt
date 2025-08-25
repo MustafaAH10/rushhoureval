@@ -1,0 +1,11 @@
+Puzzle: puzzle114
+Configuration ID: 114
+Total moves: 1
+Exit position: [2,3]
+Transformation: original
+Difficulty: hard (7 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: C [3,3] -> [2,3]

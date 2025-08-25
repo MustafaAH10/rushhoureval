@@ -1,0 +1,14 @@
+Puzzle: puzzle55
+Configuration ID: 55
+Total moves: 4
+Exit position: [2,3]
+Transformation: original
+Difficulty: medium (4 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B2 [2,3] -> [2,2]
+Step 2: B2 [2,2] -> [2,1]
+Step 3: C [3,2] -> [2,2]
+Step 4: C [2,2] -> [2,3]

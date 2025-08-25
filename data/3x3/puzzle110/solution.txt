@@ -1,0 +1,14 @@
+Puzzle: puzzle110
+Configuration ID: 110
+Total moves: 4
+Exit position: [2,3]
+Transformation: original
+Difficulty: hard (6 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: C [3,2] -> [2,2]
+Step 2: B5 [3,3] -> [3,2]
+Step 3: B3 [2,3] -> [3,3]
+Step 4: C [2,2] -> [2,3]

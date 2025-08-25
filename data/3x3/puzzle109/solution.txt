@@ -1,0 +1,18 @@
+Puzzle: puzzle109
+Configuration ID: 109
+Total moves: 8
+Exit position: [2,3]
+Transformation: original
+Difficulty: hard (7 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B4 [1,2] -> [1,3]
+Step 2: C [1,1] -> [1,2]
+Step 3: B6 [2,1] -> [1,1]
+Step 4: B3 [2,2] -> [2,1]
+Step 5: C [1,2] -> [2,2]
+Step 6: B4 [1,3] -> [1,2]
+Step 7: B7 [2,3] -> [1,3]
+Step 8: C [2,2] -> [2,3]

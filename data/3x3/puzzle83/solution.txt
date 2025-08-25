@@ -1,0 +1,13 @@
+Puzzle: puzzle83
+Configuration ID: 83
+Total moves: 3
+Exit position: [2,3]
+Transformation: original
+Difficulty: medium (5 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B3 [2,2] -> [1,2]
+Step 2: C [3,2] -> [2,2]
+Step 3: C [2,2] -> [2,3]

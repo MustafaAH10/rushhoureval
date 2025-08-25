@@ -1,0 +1,11 @@
+Puzzle: puzzle23
+Configuration ID: 23
+Total moves: 1
+Exit position: [2,3]
+Transformation: original
+Difficulty: easy (2 blockers)
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: C [3,3] -> [2,3]
