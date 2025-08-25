@@ -96,7 +96,7 @@ Step 2: [PIECE] [start_position] -> [end_position]
 Example response format:
 <solution>
 Step 1: B2 [2,3] -> [3,3]
-Step 2: B1 [2,2] -> [1,3]
+Step 2: B1 [2,2] -> [1,2]
 Step 3: C [2,1] -> [2,2]
 Step 4: C [2,2] -> [2,3]
 </solution>"""

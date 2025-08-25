@@ -6,17 +6,16 @@ import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
 from datetime import datetime
 
 
-class QwenRushHourInference:
-    def __init__(self, model_name="Qwen/Qwen2.5-14B-Instruct", device="auto"):
+class GPTOSSInference:
+    def __init__(self, model_name="openai/gpt-oss-20b", device="auto"):
         """
-        Initialize Qwen model for Rush Hour puzzle inference.
+        Initialize GPT-OSS model for Rush Hour puzzle inference.
         
         Args:
-            model_name: HuggingFace model name or local path
+            model_name: HuggingFace model name
             device: Device to run inference on ("auto", "cuda", "cpu")
         """
         self.model_name = model_name
@@ -31,20 +30,22 @@ Key Instructions:
 1. A 1-indexed coordinate system is being used
 2. Each piece (car or blocker) can only move UP, DOWN, LEFT, or RIGHT by exactly one square
 3. Pieces CANNOT move outside the grid or into occupied squares at any instant
-4. Provide your solution in the exact format requested
+4. Analyze the puzzle step by step and provide your reasoning
+5. Provide your solution in the exact format requested
 
-Be precise with coordinates and piece movements. Think logically about the sequence of moves needed."""
+Be precise with coordinates and piece movements. Think through the problem logically."""
 
     def load_model(self):
-        """Load Qwen model and tokenizer"""
-        print(f"Loading Qwen model: {self.model_name}")
-        print("This may take a few minutes...")
-        
+        """Load GPT-OSS model with mxfp4 optimization"""
         try:
+            from transformers import AutoTokenizer, AutoModelForCausalLM
+            
+            print(f"Loading GPT-OSS model: {self.model_name}")
+            print("Installing required dependencies for mxfp4...")
+            
             # Load tokenizer
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.model_name,
-                trust_remote_code=True,
                 padding_side="left"
             )
             
@@ -52,20 +53,25 @@ Be precise with coordinates and piece movements. Think logically about the seque
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
             
-            # Load model
+            # Load model with mxfp4 optimization
+            print("Loading model with mxfp4 quantization...")
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
-                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-                device_map=self.device,
+                device_map="auto",
+                torch_dtype="auto",  # This enables mxfp4 when available
                 trust_remote_code=True,
                 low_cpu_mem_usage=True
             )
             
-            print(f"✅ Model loaded successfully on device: {self.model.device}")
+            print(f"✅ Model loaded successfully")
+            print(f"✅ Device: {self.model.device if hasattr(self.model, 'device') else 'distributed'}")
             print(f"✅ Model dtype: {self.model.dtype}")
+            print(f"✅ Using mxfp4 quantization for memory efficiency")
             
         except Exception as e:
             print(f"❌ Error loading model: {e}")
+            print("\n💡 Make sure you have installed:")
+            print("pip install --upgrade transformers kernels accelerate \"triton>=3.4\"")
             raise
 
     def create_puzzle_prompt_from_json(self, puzzle_metadata: Dict[str, Any]) -> str:
@@ -116,7 +122,7 @@ Rules:
 
 Coordinate System: [row,col] format where [1,1] is top-left, [3,3] is bottom-right
 
-Provide your solution as:
+Please analyze this puzzle step by step and provide your solution in this format:
 <solution>
 Step 1: [PIECE] [start_position] -> [end_position]
 Step 2: [PIECE] [start_position] -> [end_position]
@@ -133,75 +139,66 @@ Step 4: C [2,2] -> [2,3]
 """
         return prompt
 
-    def create_chat_prompt(self, puzzle_prompt: str) -> str:
+    def create_chat_messages(self, puzzle_prompt: str) -> List[Dict[str, str]]:
         """
-        Create a chat-formatted prompt for Qwen model.
+        Create chat messages for GPT-OSS model.
         
         Args:
             puzzle_prompt: The puzzle-specific prompt
             
         Returns:
-            Formatted chat prompt string
+            List of chat messages
         """
         messages = [
-            {"role": "system", "content": self.system_prompt},
+            {"role": "developer", "content": self.system_prompt},  # GPT-OSS uses "developer" instead of "system"
             {"role": "user", "content": puzzle_prompt}
         ]
-        
-        # Use tokenizer's chat template if available
-        if hasattr(self.tokenizer, 'apply_chat_template'):
-            return self.tokenizer.apply_chat_template(
-                messages, 
-                tokenize=False, 
-                add_generation_prompt=True
-            )
-        else:
-            # Fallback manual format
-            chat_prompt = f"<|im_start|>system\n{self.system_prompt}<|im_end|>\n"
-            chat_prompt += f"<|im_start|>user\n{puzzle_prompt}<|im_end|>\n"
-            chat_prompt += "<|im_start|>assistant\n"
-            return chat_prompt
+        return messages
 
-    def generate_response(self, prompt: str, max_new_tokens: int = 1024, temperature: float = 0.5) -> str:
+    def generate_response(self, messages: List[Dict[str, str]], max_new_tokens: int = 4096) -> str:
         """
-        Generate response from Qwen model.
+        Generate response using GPT-OSS model.
         
         Args:
-            prompt: Input prompt
-            max_new_tokens: Maximum tokens to generate
-            temperature: Sampling temperature
+            messages: Chat messages
+            max_new_tokens: Maximum tokens to generate (GPT-OSS needs large values for reasoning)
             
         Returns:
             Generated response text
         """
         if self.model is None or self.tokenizer is None:
-            raise ValueError("Model not loaded. Call load_model() first.")
+            raise ValueError("No model loaded. Call load_model() first.")
         
         try:
-            # Tokenize input
-            inputs = self.tokenizer(
-                prompt, 
-                return_tensors="pt", 
-                truncation=True, 
-                max_length=2048
+            # Apply chat template with GPT-OSS specific settings
+            inputs = self.tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=True,
+                return_tensors="pt",
+                return_dict=True,
+                reasoning_effort="medium"  # GPT-OSS specific: can be "low", "medium", or "high"
             ).to(self.model.device)
             
-            # Generate response
+            # Generate response with GPT-OSS recommended parameters
+            print("🤖 Generating response with reasoning...")
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
                     max_new_tokens=max_new_tokens,
-                    temperature=temperature,
-                    do_sample=temperature > 0,
+                    temperature=1.0,  # GPT-OSS default
+                    top_p=1.0,        # GPT-OSS default
+                    top_k=40,         # GPT-OSS default
+                    min_p=0.0,        # GPT-OSS default
+                    do_sample=True,
                     pad_token_id=self.tokenizer.pad_token_id,
                     eos_token_id=self.tokenizer.eos_token_id,
-                    repetition_penalty=1.1
+                    # Important: skip_special_tokens=False to capture reasoning traces
                 )
             
-            # Decode response (remove input prompt)
+            # Decode response with special tokens to capture reasoning
             input_length = inputs['input_ids'].shape[1]
             response_tokens = outputs[0][input_length:]
-            response = self.tokenizer.decode(response_tokens, skip_special_tokens=True)
+            response = self.tokenizer.decode(response_tokens, skip_special_tokens=False)
             
             return response.strip()
             
@@ -209,12 +206,48 @@ Step 4: C [2,2] -> [2,3]
             print(f"❌ Error generating response: {e}")
             return f"ERROR: {str(e)}"
 
-    def parse_solution(self, response: str) -> List[str]:
+    def parse_gpt_oss_response(self, response: str) -> Dict[str, str]:
         """
-        Parse solution steps from model response.
+        Parse GPT-OSS response to extract reasoning and final answer.
+        GPT-OSS uses channels: analysis (reasoning) and final (answer).
         
         Args:
             response: Raw model response
+            
+        Returns:
+            Dictionary with 'reasoning', 'final_answer', and 'full_response'
+        """
+        result = {
+            'reasoning': '',
+            'final_answer': '',
+            'full_response': response
+        }
+        
+        # GPT-OSS structure: <|start|>assistant<|channel|>analysis<|message|>REASONING<|end|><|start|>assistant<|channel|>final<|message|>ANSWER
+        
+        # Extract reasoning (analysis channel)
+        analysis_pattern = r'<\|channel\|>analysis<\|message\|>(.*?)(?:<\|end\|>|<\|start\|>assistant<\|channel\|>final<\|message\|>)'
+        analysis_match = re.search(analysis_pattern, response, re.DOTALL)
+        if analysis_match:
+            result['reasoning'] = analysis_match.group(1).strip()
+        
+        # Extract final answer (final channel)
+        final_pattern = r'<\|channel\|>final<\|message\|>(.*?)(?:<\|end\|>|$)'
+        final_match = re.search(final_pattern, response, re.DOTALL)
+        if final_match:
+            result['final_answer'] = final_match.group(1).strip()
+        else:
+            # Fallback: if no channels found, treat entire response as final answer
+            result['final_answer'] = response
+        
+        return result
+
+    def parse_solution(self, final_answer: str) -> List[str]:
+        """
+        Parse solution steps from final answer.
+        
+        Args:
+            final_answer: Final answer from GPT-OSS
             
         Returns:
             List of solution steps
@@ -222,31 +255,25 @@ Step 4: C [2,2] -> [2,3]
         solution_steps = []
         
         # Look for <solution> tags
-        solution_match = re.search(r'<solution>(.*?)</solution>', response, re.DOTALL | re.IGNORECASE)
-        
+        solution_match = re.search(r'<solution>(.*?)</solution>', final_answer, re.DOTALL | re.IGNORECASE)
         if solution_match:
             solution_text = solution_match.group(1).strip()
-            
-            # Extract individual steps
-            step_pattern = r'Step\s+\d+:\s*([A-Z0-9]+)\s*\[(\d+),(\d+)\]\s*->\s*\[(\d+),(\d+)\]'
-            steps = re.findall(step_pattern, solution_text, re.IGNORECASE)
-            
-            for i, (piece, start_row, start_col, end_row, end_col) in enumerate(steps):
-                step_text = f"Step {i+1}: {piece} [{start_row},{start_col}] -> [{end_row},{end_col}]"
-                solution_steps.append(step_text)
+        else:
+            # Try to find steps in the response directly
+            solution_text = final_answer
+        
+        # Extract individual steps
+        step_pattern = r'Step\s+\d+:\s*([A-Z0-9]+)\s*\[(\d+),(\d+)\]\s*->\s*\[(\d+),(\d+)\]'
+        steps = re.findall(step_pattern, solution_text, re.IGNORECASE)
+        
+        for i, (piece, start_row, start_col, end_row, end_col) in enumerate(steps):
+            step_text = f"Step {i+1}: {piece} [{start_row},{start_col}] -> [{end_row},{end_col}]"
+            solution_steps.append(step_text)
         
         return solution_steps
 
     def load_puzzle_metadata(self, puzzle_folder: str) -> Dict[str, Any]:
-        """
-        Load puzzle metadata from JSON file.
-        
-        Args:
-            puzzle_folder: Path to puzzle folder
-            
-        Returns:
-            Puzzle metadata dictionary
-        """
+        """Load puzzle metadata from JSON file."""
         json_file = os.path.join(puzzle_folder, "puzzle_state.json")
         
         if os.path.exists(json_file):
@@ -261,25 +288,19 @@ Step 4: C [2,2] -> [2,3]
             return {}
 
     def save_puzzle_result(self, output_path: str, puzzle_num: int, 
-                          prompt: str, raw_response: str, parsed_solution: List[str],
-                          metadata: Dict[str, Any], processing_time: float):
-        """
-        Save individual puzzle result with all essential data in dedicated puzzle folder.
-        
-        Args:
-            output_path: Base results output path
-            puzzle_num: Puzzle number
-            prompt: The prompt sent to model
-            raw_response: Raw model response
-            parsed_solution: Parsed solution steps
-            metadata: Puzzle metadata
-            processing_time: Processing time in seconds
-        """
-        # Create individual puzzle result folder
+                          prompt: str, raw_response: str, parsed_response: Dict[str, str],
+                          parsed_solution: List[str], metadata: Dict[str, Any], processing_time: float):
+        """Save individual puzzle result with reasoning traces"""
         puzzle_result_folder = os.path.join(output_path, f"puzzle{puzzle_num}")
         os.makedirs(puzzle_result_folder, exist_ok=True)
         
         result = {
+            'model_info': {
+                'model_name': self.model_name,
+                'inference_method': 'transformers_mxfp4',
+                'model_type': 'GPT-OSS-20B',
+                'reasoning_effort': 'medium'
+            },
             'puzzle_info': {
                 'puzzle_num': puzzle_num,
                 'difficulty': metadata.get('puzzle_info', {}).get('difficulty', 'unknown'),
@@ -290,43 +311,39 @@ Step 4: C [2,2] -> [2,3]
             },
             'prompt': prompt,
             'raw_response': raw_response,
+            'reasoning_trace': parsed_response['reasoning'],
+            'final_answer': parsed_response['final_answer'],
             'parsed_solution': parsed_solution,
             'analysis': {
                 'predicted_solution_length': len(parsed_solution),
                 'length_matches_optimal': len(parsed_solution) == metadata.get('puzzle_info', {}).get('total_moves_in_solution', 0),
                 'solution_found': len(parsed_solution) > 0,
-                'parsing_successful': len(parsed_solution) > 0
+                'parsing_successful': len(parsed_solution) > 0,
+                'has_reasoning_trace': len(parsed_response['reasoning']) > 0,
+                'response_length_chars': len(raw_response),
+                'reasoning_length_chars': len(parsed_response['reasoning']),
+                'final_answer_length_chars': len(parsed_response['final_answer'])
             }
         }
         
-        # Save to individual result file in puzzle folder
-        result_file = os.path.join(puzzle_result_folder, f"qwen_puzzle{puzzle_num}_result.json")
+        result_file = os.path.join(puzzle_result_folder, f"gpt_oss_puzzle{puzzle_num}_result.json")
         with open(result_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
         
         return result_file
 
     def run_inference_on_dataset(self, dataset_path: str = "../../data/3x3", 
-                                output_path: str = "models/qwen/results3x3", 
+                                output_path: str = "gpt_oss_results3x3", 
                                 max_puzzles: Optional[int] = None,
                                 start_puzzle: int = 1):
-        """
-        Run inference on all puzzles in the dataset.
-        
-        Args:
-            dataset_path: Path to dataset folder
-            output_path: Path to save results
-            max_puzzles: Maximum number of puzzles to process (None for all)
-            start_puzzle: Starting puzzle number
-        """
+        """Run inference on all puzzles in the dataset."""
         if not os.path.exists(dataset_path):
             print(f"❌ Dataset path not found: {dataset_path}")
             return
 
-        # Create output directory
         os.makedirs(output_path, exist_ok=True)
         
-        # Find all puzzle folders
+        # Find puzzle folders
         puzzle_folders = []
         for item in os.listdir(dataset_path):
             item_path = os.path.join(dataset_path, item)
@@ -338,21 +355,17 @@ Step 4: C [2,2] -> [2,3]
                 except ValueError:
                     continue
         
-        # Sort by puzzle number
         puzzle_folders.sort(key=lambda x: x[0])
         
-        # Limit number of puzzles if specified
         if max_puzzles:
             puzzle_folders = puzzle_folders[:max_puzzles]
         
         print(f"Found {len(puzzle_folders)} puzzles to process")
-        print(f"Starting inference with Qwen model...")
+        print(f"Starting inference with GPT-OSS-20B model...")
         
-        # Results storage
         results = []
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Process each puzzle
         for i, (puzzle_num, puzzle_folder) in enumerate(puzzle_folders):
             print(f"\n{'='*60}")
             print(f"Processing Puzzle {puzzle_num} ({i+1}/{len(puzzle_folders)})")
@@ -361,39 +374,34 @@ Step 4: C [2,2] -> [2,3]
             start_time = time.time()
             
             try:
-                # Load puzzle metadata from JSON
                 metadata = self.load_puzzle_metadata(puzzle_folder)
                 if not metadata:
                     print(f"❌ Skipping puzzle {puzzle_num} - no metadata found")
                     continue
                 
-                # Create puzzle prompt from JSON data
                 puzzle_prompt = self.create_puzzle_prompt_from_json(metadata)
+                messages = self.create_chat_messages(puzzle_prompt)
                 
-                # Create chat prompt
-                chat_prompt = self.create_chat_prompt(puzzle_prompt)
+                print("🤖 Generating solution with reasoning...")
+                raw_response = self.generate_response(messages, max_new_tokens=4096)
                 
-                # Generate response
-                print("🤖 Generating solution...")
-                raw_response = self.generate_response(chat_prompt)
-                
-                # Parse solution
-                parsed_solution = self.parse_solution(raw_response)
+                # Parse GPT-OSS response to extract reasoning and final answer
+                parsed_response = self.parse_gpt_oss_response(raw_response)
+                parsed_solution = self.parse_solution(parsed_response['final_answer'])
                 
                 processing_time = time.time() - start_time
                 
-                # Save individual puzzle result with all essential data
                 result_file = self.save_puzzle_result(
                     output_path=output_path,
                     puzzle_num=puzzle_num,
                     prompt=puzzle_prompt,
                     raw_response=raw_response,
+                    parsed_response=parsed_response,
                     parsed_solution=parsed_solution,
                     metadata=metadata,
                     processing_time=processing_time
                 )
                 
-                # Store for summary
                 result_summary = {
                     'puzzle_num': puzzle_num,
                     'puzzle_folder': os.path.basename(puzzle_folder),
@@ -403,50 +411,47 @@ Step 4: C [2,2] -> [2,3]
                     'predicted_solution_length': len(parsed_solution),
                     'length_matches_optimal': len(parsed_solution) == metadata.get('puzzle_info', {}).get('total_moves_in_solution', 0),
                     'solution_found': len(parsed_solution) > 0,
+                    'has_reasoning_trace': len(parsed_response['reasoning']) > 0,
+                    'reasoning_length_chars': len(parsed_response['reasoning']),
                     'processing_time_seconds': round(processing_time, 2),
                     'timestamp': datetime.now().isoformat()
                 }
                 
                 results.append(result_summary)
                 
-                # Print summary
                 print(f"✅ Generated solution with {len(parsed_solution)} steps")
                 print(f"⏱️  Processing time: {processing_time:.2f} seconds")
                 print(f"🎯 Optimal solution: {metadata.get('puzzle_info', {}).get('total_moves_in_solution', 0)} steps")
+                print(f"🧠 Reasoning trace: {len(parsed_response['reasoning'])} characters")
                 print(f"📁 Result saved to: {result_file}")
                 
-                # Save progress periodically
-                if (i + 1) % 10 == 0:
+                if (i + 1) % 5 == 0:  # Save progress more frequently due to longer processing times
                     self.save_results_summary(results, output_path, timestamp)
             
             except Exception as e:
                 print(f"❌ Error processing puzzle {puzzle_num}: {e}")
                 continue
         
-        # Save final results summary
         self.save_results_summary(results, output_path, timestamp)
         
         print(f"\n🎉 Inference complete!")
         print(f"Processed {len(results)} puzzles")
         print(f"Results saved to: {output_path}")
-        print(f"Individual results saved in: {output_path}/puzzle[N]/qwen_puzzle[N]_result.json")
 
     def save_results_summary(self, results: List[Dict], output_path: str, timestamp: str):
         """Save results summary in multiple formats"""
-        
-        # Save comprehensive JSON results
-        json_file = os.path.join(output_path, f"qwen_inference_results_{timestamp}.json")
+        json_file = os.path.join(output_path, f"gpt_oss_inference_results_{timestamp}.json")
         with open(json_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
         
-        # Save CSV summary
-        csv_file = os.path.join(output_path, f"qwen_inference_summary_{timestamp}.csv")
+        csv_file = os.path.join(output_path, f"gpt_oss_inference_summary_{timestamp}.csv")
         with open(csv_file, 'w', newline='', encoding='utf-8') as f:
             if results:
                 fieldnames = [
                     'puzzle_num', 'puzzle_folder', 'difficulty', 'num_blockers',
                     'optimal_solution_length', 'predicted_solution_length', 
-                    'length_matches_optimal', 'solution_found', 'processing_time_seconds', 'timestamp'
+                    'length_matches_optimal', 'solution_found', 'has_reasoning_trace',
+                    'reasoning_length_chars', 'processing_time_seconds', 'timestamp'
                 ]
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
@@ -456,53 +461,15 @@ Step 4: C [2,2] -> [2,3]
         
         print(f"📊 Results summary saved to: {csv_file}")
 
-    def analyze_results(self, results: List[Dict]) -> Dict[str, Any]:
-        """Analyze inference results and compute metrics"""
-        if not results:
-            return {}
-        
-        total_puzzles = len(results)
-        optimal_length_matches = sum(1 for r in results if r.get('length_matches_optimal', False))
-        solutions_found = sum(1 for r in results if r.get('solution_found', False))
-        
-        # Difficulty breakdown
-        difficulty_stats = {}
-        for result in results:
-            diff = result['difficulty']
-            if diff not in difficulty_stats:
-                difficulty_stats[diff] = {'total': 0, 'optimal_matches': 0, 'solutions_found': 0}
-            difficulty_stats[diff]['total'] += 1
-            if result.get('length_matches_optimal', False):
-                difficulty_stats[diff]['optimal_matches'] += 1
-            if result.get('solution_found', False):
-                difficulty_stats[diff]['solutions_found'] += 1
-        
-        # Processing time stats
-        times = [r['processing_time_seconds'] for r in results]
-        avg_time = sum(times) / len(times) if times else 0
-        
-        analysis = {
-            'total_puzzles_processed': total_puzzles,
-            'solutions_found': solutions_found,
-            'solution_rate': solutions_found / total_puzzles if total_puzzles > 0 else 0,
-            'optimal_length_matches': optimal_length_matches,
-            'optimal_length_accuracy': optimal_length_matches / total_puzzles if total_puzzles > 0 else 0,
-            'difficulty_breakdown': difficulty_stats,
-            'average_processing_time_seconds': round(avg_time, 2),
-            'total_processing_time_seconds': round(sum(times), 2)
-        }
-        
-        return analysis
-
 
 def main():
     """Main execution function"""
-    print("🚀 Starting Qwen 2.5-14B Rush Hour Inference")
-    print("=" * 60)
+    print("🚀 Starting GPT-OSS-20B Rush Hour Inference with mxfp4")
+    print("=" * 70)
     
     # Initialize inference system
-    inference = QwenRushHourInference(
-        model_name="Qwen/Qwen2.5-14B-Instruct",
+    inference = GPTOSSInference(
+        model_name="openai/gpt-oss-20b",
         device="auto"
     )
     
@@ -511,25 +478,25 @@ def main():
         inference.load_model()
     except Exception as e:
         print(f"❌ Failed to load model: {e}")
+        print("\n💡 Make sure you have installed the required dependencies:")
+        print("pip install --upgrade transformers kernels accelerate \"triton>=3.4\"")
         return
     
     # Configuration
-    dataset_path = "/root/rushhoureval/data/3x3"
-    output_path = "results3x3"
+    dataset_path = "/root/rushhoureval/data/3x3"  # Update this path as needed
+    output_path = "gpt_oss_results3x3"
     
-    # Create output directory
     os.makedirs(output_path, exist_ok=True)
     
     print(f"\n📁 Dataset path: {dataset_path}")
     print(f"📁 Output path: {output_path}")
     
-    # Check if dataset exists
     if not os.path.exists(dataset_path):
         print(f"❌ Dataset not found at {dataset_path}")
-        print("Please run the puzzle generator first to create the dataset.")
+        print("Please update the dataset_path variable to point to your dataset.")
         return
     
-    # Run inference on all puzzles
+    # Run inference
     inference.run_inference_on_dataset(
         dataset_path=dataset_path,
         output_path=output_path,
@@ -538,6 +505,12 @@ def main():
     )
     
     print("✅ Inference pipeline completed!")
+    print("\n📋 Key features:")
+    print("1. Uses mxfp4 quantization for memory efficiency")
+    print("2. Captures full reasoning traces in analysis channel")
+    print("3. Separates reasoning from final answers")
+    print("4. Uses GPT-OSS recommended generation parameters")
+    print("5. Saves detailed results with reasoning analysis")
 
 
 if __name__ == "__main__":
