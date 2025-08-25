@@ -95,9 +95,10 @@ Step 2: [PIECE] [start_position] -> [end_position]
 
 Example response format:
 <solution>
-Step 1: C [2,1] -> [2,2]
-Step 2: B1 [1,3] -> [1,2]  
-Step 3: C [2,2] -> [1,2]
+Step 1: B2 [2,3] -> [3,3]
+Step 2: B1 [2,2] -> [1,3]
+Step 3: C [2,1] -> [2,2]
+Step 4: C [2,2] -> [2,3]
 </solution>"""
         return prompt
 
@@ -258,7 +259,7 @@ Step 3: C [2,2] -> [1,2]
         return result_file
 
     def run_inference_on_dataset(self, dataset_path: str = "/home/mustafaah/rushhoureval/data/3x3", 
-                                output_path: str = "results", 
+                                output_path: str = "results3x3", 
                                 max_puzzles: Optional[int] = None,
                                 start_puzzle: int = 1,
                                 delay_between_requests: float = 1.0,
@@ -446,26 +447,6 @@ Step 3: C [2,2] -> [1,2]
                     writer.writerow(result)
         
         print(f"📊 Results summary saved to: {csv_file}")
-        print(f"💰 Total API cost estimate: {self.estimate_cost(total_usage)}")
-
-    def estimate_cost(self, usage_info: Dict) -> str:
-        """Estimate API cost based on usage (GPT-5 pricing TBD)"""
-        # Placeholder pricing - actual GPT-5 pricing not yet available
-        # This is an estimate based on expected pricing structure
-        pricing = {
-            'gpt-5': {
-                'input': 0.010,      # per 1K tokens (estimated)
-                'reasoning': 0.020,   # per 1K tokens (estimated - may be higher)
-                'output': 0.030       # per 1K tokens (estimated)
-            }
-        }
-        
-        input_cost = (usage_info.get('input_tokens', 0) / 1000) * pricing['gpt-5']['input']
-        reasoning_cost = (usage_info.get('reasoning_tokens', 0) / 1000) * pricing['gpt-5']['reasoning']
-        output_cost = (usage_info.get('output_tokens', 0) / 1000) * pricing['gpt-5']['output']
-        total_cost = input_cost + reasoning_cost + output_cost
-        
-        return f"${total_cost:.4f} (estimated - {self.model_name})"
 
     def analyze_results(self, results: List[Dict]) -> Dict[str, Any]:
         """Analyze inference results and compute metrics including reasoning analysis"""
@@ -544,7 +525,7 @@ def main():
     
     # Configuration
     dataset_path = "/home/mustafaah/rushhoureval/data/3x3"
-    output_path = "results"
+    output_path = "results3x3"
     
     # Create output directory
     os.makedirs(output_path, exist_ok=True)
@@ -565,7 +546,7 @@ def main():
         output_path=output_path,
         max_puzzles=150,  # Start with 5 puzzles for testing GPT-5
         start_puzzle=1,
-        delay_between_requests=2.0,  # 2 second delay for GPT-5
+        delay_between_requests=1.0,  # 2 second delay for GPT-5
         reasoning_effort="medium",   # "minimal", "low", "medium", "high"
         text_verbosity="low"         # "low", "medium", "high"
     )
