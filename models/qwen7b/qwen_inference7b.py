@@ -125,9 +125,10 @@ Step 2: [PIECE] [start_position] -> [end_position]
 
 Example response format:
 <solution>
-Step 1: C [2,1] -> [2,2]
-Step 2: B1 [1,3] -> [1,2]  
-Step 3: C [2,2] -> [1,2]
+Step 1: B2 [2,3] -> [3,3]
+Step 2: B1 [2,2] -> [1,3]
+Step 3: C [2,1] -> [2,2]
+Step 4: C [2,2] -> [2,3]
 </solution>
 """
         return prompt
@@ -161,7 +162,7 @@ Step 3: C [2,2] -> [1,2]
             chat_prompt += "<|im_start|>assistant\n"
             return chat_prompt
 
-    def generate_response(self, prompt: str, max_new_tokens: int = 512, temperature: float = 0.1) -> str:
+    def generate_response(self, prompt: str, max_new_tokens: int = 1024, temperature: float = 0.5) -> str:
         """
         Generate response from Qwen model.
         
