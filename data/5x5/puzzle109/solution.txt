@@ -1,0 +1,20 @@
+Puzzle: puzzle109
+Configuration ID: 109
+Total moves: 9
+Target zone: [3,4] and [3,5] (horizontal 2x1)
+Difficulty: hard (5 2x1 blockers, 3 3x1 blockers)
+Car orientation: Always horizontal
+Victory condition: Car must exactly cover both cells of target zone
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B4 [(5, 4), (5, 5)] -> [(4, 4), (4, 5)]
+Step 2: B1 [(2, 5), (3, 5)] -> [(1, 5), (2, 5)]
+Step 3: C [(5, 2), (5, 3)] -> [(5, 3), (5, 4)]
+Step 4: C [(5, 3), (5, 4)] -> [(5, 4), (5, 5)]
+Step 5: B3 [(4, 2), (4, 3)] -> [(5, 2), (5, 3)]
+Step 6: B4 [(4, 4), (4, 5)] -> [(4, 3), (4, 4)]
+Step 7: B4 [(4, 3), (4, 4)] -> [(4, 2), (4, 3)]
+Step 8: C [(5, 4), (5, 5)] -> [(4, 4), (4, 5)]
+Step 9: C [(4, 4), (4, 5)] -> [(3, 4), (3, 5)]

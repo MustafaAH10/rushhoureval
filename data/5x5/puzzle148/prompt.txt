@@ -1,0 +1,38 @@
+Task: You have been given a 5x5 Rush Hour puzzle above which you need to solve. Move the horizontal 2x1 car "C" so that it completely covers the 2-cell TARGET zone at positions [3,4] and [3,5].
+
+Current Pieces:
+- Car "C" (horizontal 2x1): Positions [4,3], [4,4]
+- 2x1 Blockers: B4 (2x1 horizontal) at [2,3], [2,4], B1 (2x1 vertical) at [2,5], [3,5], B3 (2x1 horizontal) at [5,1], [5,2], B2 (2x1 horizontal) at [5,4], [5,5]
+- 3x1 Blockers: L3 (3x1 horizontal) at [1,2], [1,3], [1,4], L2 (3x1 vertical) at [2,1], [3,1], [4,1], L1 (3x1 horizontal) at [3,2], [3,3], [3,4]
+- TARGET Zone: Positions [3,4] and [3,5]
+
+Rules:
+- Any piece can move UP, DOWN, LEFT, or RIGHT by exactly one square
+- For multi-cell pieces: The entire piece moves together as a unit
+- Pieces cannot move outside the 5x5 grid
+- Pieces cannot move into occupied squares
+- No two pieces can occupy the same square
+- Goal: Move the horizontal 2x1 car "C" so that it exactly covers both cells of the TARGET zone
+
+Coordinate System: [row,col] format where [1,1] is top-left, [5,5] is bottom-right
+
+Provide your solution as:
+<solution>
+Step 1: [PIECE] [start_positions] -> [end_positions]
+Step 2: [PIECE] [start_positions] -> [end_positions]
+...
+</solution>
+
+For all pieces (car and blockers), list all coordinates they occupy:
+- 2x1 pieces: C [[2,1],[2,2]] -> [[2,2],[2,3]]
+- 3x1 pieces: L1 [[1,1],[2,1],[3,1]] -> [[1,2],[2,2],[3,2]]
+
+Example response format:
+<solution>
+Step 1: B1 [[1,1],[1,2]] -> [[1,2],[1,3]]
+Step 2: L1 [[3,1],[3,2],[3,3]] -> [[2,1],[2,2],[2,3]]
+Step 3: C [[4,1],[4,2]] -> [[3,1],[3,2]]
+Step 4: C [[3,1],[3,2]] -> [[3,2],[3,3]]
+Step 5: C [[3,2],[3,3]] -> [[3,3],[3,4]]
+Step 6: C [[3,3],[3,4]] -> [[3,4],[3,5]]
+</solution>

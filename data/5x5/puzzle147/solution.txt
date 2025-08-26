@@ -1,0 +1,20 @@
+Puzzle: puzzle147
+Configuration ID: 147
+Total moves: 9
+Target zone: [3,4] and [3,5] (horizontal 2x1)
+Difficulty: hard (5 2x1 blockers, 3 3x1 blockers)
+Car orientation: Always horizontal
+Victory condition: Car must exactly cover both cells of target zone
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B2 [(4, 4), (5, 4)] -> [(4, 5), (5, 5)]
+Step 2: B3 [(3, 4), (3, 5)] -> [(2, 4), (2, 5)]
+Step 3: C [(5, 1), (5, 2)] -> [(5, 2), (5, 3)]
+Step 4: C [(5, 2), (5, 3)] -> [(5, 3), (5, 4)]
+Step 5: B1 [(3, 2), (4, 2)] -> [(3, 1), (4, 1)]
+Step 6: B5 [(3, 3), (4, 3)] -> [(3, 2), (4, 2)]
+Step 7: C [(5, 3), (5, 4)] -> [(4, 3), (4, 4)]
+Step 8: C [(4, 3), (4, 4)] -> [(3, 3), (3, 4)]
+Step 9: C [(3, 3), (3, 4)] -> [(3, 4), (3, 5)]

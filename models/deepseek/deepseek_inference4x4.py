@@ -551,8 +551,8 @@ def main():
     )
     
     # Configuration
-    dataset_path = "/root/rushhoureval/data/4x4"
-    output_path = "deepseek_results4x4"
+    dataset_path = "/home/mustafaah/rushhoureval/data/4x4"
+    output_path = "results4x4"
     
     os.makedirs(output_path, exist_ok=True)
     

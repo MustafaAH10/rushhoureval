@@ -1,0 +1,24 @@
+Puzzle: puzzle99
+Configuration ID: 99
+Total moves: 13
+Target zone: [3,4] and [3,5] (horizontal 2x1)
+Difficulty: medium (3 2x1 blockers, 3 3x1 blockers)
+Car orientation: Always horizontal
+Victory condition: Car must exactly cover both cells of target zone
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B2 [(4, 2), (5, 2)] -> [(3, 2), (4, 2)]
+Step 2: B1 [(3, 4), (3, 5)] -> [(4, 4), (4, 5)]
+Step 3: B3 [(5, 3), (5, 4)] -> [(5, 2), (5, 3)]
+Step 4: B1 [(4, 4), (4, 5)] -> [(5, 4), (5, 5)]
+Step 5: L1 [(2, 1), (2, 2), (2, 3)] -> [(2, 2), (2, 3), (2, 4)]
+Step 6: L1 [(2, 2), (2, 3), (2, 4)] -> [(2, 3), (2, 4), (2, 5)]
+Step 7: C [(1, 1), (1, 2)] -> [(2, 1), (2, 2)]
+Step 8: L1 [(2, 3), (2, 4), (2, 5)] -> [(3, 3), (3, 4), (3, 5)]
+Step 9: C [(2, 1), (2, 2)] -> [(2, 2), (2, 3)]
+Step 10: C [(2, 2), (2, 3)] -> [(2, 3), (2, 4)]
+Step 11: C [(2, 3), (2, 4)] -> [(2, 4), (2, 5)]
+Step 12: L1 [(3, 3), (3, 4), (3, 5)] -> [(4, 3), (4, 4), (4, 5)]
+Step 13: C [(2, 4), (2, 5)] -> [(3, 4), (3, 5)]

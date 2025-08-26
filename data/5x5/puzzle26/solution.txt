@@ -1,0 +1,13 @@
+Puzzle: puzzle26
+Configuration ID: 26
+Total moves: 2
+Target zone: [3,4] and [3,5] (horizontal 2x1)
+Difficulty: easy (3 2x1 blockers, 1 3x1 blockers)
+Car orientation: Always horizontal
+Victory condition: Car must exactly cover both cells of target zone
+Coordinate system: [row,col] where [1,1] is top-left
+
+SOLUTION:
+========================================
+Step 1: B3 [(3, 3), (3, 4)] -> [(3, 2), (3, 3)]
+Step 2: C [(4, 4), (4, 5)] -> [(3, 4), (3, 5)]

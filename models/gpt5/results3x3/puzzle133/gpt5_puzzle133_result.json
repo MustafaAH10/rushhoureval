@@ -1,0 +1,33 @@
+{
+  "puzzle_info": {
+    "puzzle_num": 133,
+    "difficulty": "hard",
+    "num_blockers": 7,
+    "optimal_solution_length": 2,
+    "processing_time_seconds": 14.2,
+    "timestamp": "2025-08-25T15:32:45.476236"
+  },
+  "prompt": "Task: Solve this 3x3 Rush Hour puzzle - move car \"C\" from position [2,2] to the TARGET at position [2,3] given the position of the blockers below.\n\nCurrent Grid State (JSON format):\n[[\"B7\",\"B5\",\"B6\"],[\"B2\",\"C\",\"B1\"],[\"B3\",\"B4\",\".\"]]\n\nCurrent Pieces:\n- Car \"C\": Position [2,2]\n- Blockers: B7 at [1,1], B5 at [1,2], B6 at [1,3], B2 at [2,1], B1 at [2,3], B3 at [3,1], B4 at [3,2]\n- TARGET: Position [2,3]\n\nRules:\n- Any piece can move UP, DOWN, LEFT, or RIGHT by exactly one square\n- Pieces cannot move outside the 3x3 grid\n- Pieces cannot move into occupied squares\n- No two pieces can occupy the same square at any instant\n- Goal: Move car \"C\" to the TARGET position\n\nCoordinate System: [row,col] format where [1,1] is top-left, [3,3] is bottom-right\n\nProvide your solution as:\n<solution>\nStep 1: [PIECE] [start_position] -> [end_position]\nStep 2: [PIECE] [start_position] -> [end_position]\n...\n</solution>\n\nExample response format:\n<solution>\nStep 1: B2 [2,3] -> [3,3]\nStep 2: B1 [2,2] -> [1,2]\nStep 3: C [2,1] -> [2,2]\nStep 4: C [2,2] -> [2,3]\n</solution>",
+  "gpt5_output_text": "<solution>\nStep 1: B1 [2,3] -> [3,3]\nStep 2: C [2,2] -> [2,3]\n</solution>",
+  "gpt5_reasoning_text": "",
+  "parsed_solution": [
+    "Step 1: B1 [2,3] -> [3,3]",
+    "Step 2: C [2,2] -> [2,3]"
+  ],
+  "api_usage": {
+    "reasoning_tokens": 0,
+    "output_tokens": 685,
+    "total_tokens": 1187,
+    "input_tokens": 502,
+    "model": "gpt-5"
+  },
+  "analysis": {
+    "predicted_solution_length": 2,
+    "length_matches_optimal": true,
+    "solution_found": true,
+    "parsing_successful": true,
+    "has_reasoning": false,
+    "reasoning_length_chars": 0,
+    "reasoning_tokens": 0
+  }
+}
