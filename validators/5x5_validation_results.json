@@ -1,0 +1,39 @@
+{
+  "grid_size": "5x5",
+  "models": {
+    "gpt5": {
+      "model_name": "gpt5",
+      "grid_size": "5x5",
+      "total_puzzles": 150,
+      "illegal_moves": 36,
+      "legal_no_target": 0,
+      "legal_suboptimal_target": 47,
+      "legal_optimal_target": 67,
+      "parsing_failures": 32,
+      "detailed_results": [],
+      "illegal_percentage": 24.0,
+      "legal_no_target_percentage": 0.0,
+      "legal_suboptimal_percentage": 31.333333333333336,
+      "legal_optimal_percentage": 44.666666666666664,
+      "legal_accomplishes_target_percentage": 76.0,
+      "legal_optimal_target_percentage": 44.666666666666664
+    },
+    "gemini": {
+      "model_name": "gemini",
+      "grid_size": "5x5",
+      "total_puzzles": 150,
+      "illegal_moves": 82,
+      "legal_no_target": 0,
+      "legal_suboptimal_target": 26,
+      "legal_optimal_target": 42,
+      "parsing_failures": 1,
+      "detailed_results": [],
+      "illegal_percentage": 54.666666666666664,
+      "legal_no_target_percentage": 0.0,
+      "legal_suboptimal_percentage": 17.333333333333336,
+      "legal_optimal_percentage": 28.000000000000004,
+      "legal_accomplishes_target_percentage": 45.33333333333333,
+      "legal_optimal_target_percentage": 28.000000000000004
+    }
+  }
+}

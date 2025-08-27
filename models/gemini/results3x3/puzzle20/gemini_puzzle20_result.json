@@ -1,0 +1,23 @@
+{
+  "puzzle_info": {
+    "puzzle_num": 20,
+    "difficulty": "easy",
+    "num_blockers": 3,
+    "optimal_solution_length": 3,
+    "processing_time_seconds": 14.56,
+    "timestamp": "2025-08-27T13:50:02.942322"
+  },
+  "prompt": "Task: Solve this 3x3 Rush Hour puzzle - move car \"C\" from position [2,1] to the TARGET at position [2,3] given the position of the blockers below.\n\nCurrent Grid State (JSON format):\n[[\".\",\".\",\".\"],[\"C\",\"B2\",\".\"],[\".\",\"B3\",\"B1\"]]\n\nCurrent Pieces:\n- Car \"C\": Position [2,1]\n- Blockers: B2 at [2,2], B3 at [3,2], B1 at [3,3]\n- TARGET: Position [2,3]\n\nRules:\n- Any piece can move UP, DOWN, LEFT, or RIGHT by exactly one square\n- Pieces cannot move outside the 3x3 grid\n- Pieces cannot move into occupied squares\n- No two pieces can occupy the same square at any instant\n- Goal: Move car \"C\" to the TARGET position\n\nCoordinate System: [row,col] format where [1,1] is top-left, [3,3] is bottom-right\n\nProvide your solution as:\n<solution>\nStep 1: [PIECE] [start_position] -> [end_position]\nStep 2: [PIECE] [start_position] -> [end_position]\n...\n</solution>\n\nExample response format:\n<solution>\nStep 1: B2 [2,3] -> [3,3]\nStep 2: B1 [2,2] -> [1,2]\nStep 3: C [2,1] -> [2,2]\nStep 4: C [2,2] -> [2,3]\n</solution>\n",
+  "raw_response": "<solution>\nStep 1: B2 [2,2] -> [1,2]\nStep 2: C [2,1] -> [2,2]\nStep 3: C [2,2] -> [2,3]\n</solution>",
+  "parsed_solution": [
+    "Step 1: B2 [2,2] -> [1,2]",
+    "Step 2: C [2,1] -> [2,2]",
+    "Step 3: C [2,2] -> [2,3]"
+  ],
+  "analysis": {
+    "predicted_solution_length": 3,
+    "length_matches_optimal": true,
+    "solution_found": true,
+    "parsing_successful": true
+  }
+}
