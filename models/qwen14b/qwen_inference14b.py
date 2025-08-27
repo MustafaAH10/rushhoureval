@@ -162,7 +162,7 @@ Step 4: C [2,2] -> [2,3]
             chat_prompt += "<|im_start|>assistant\n"
             return chat_prompt
 
-    def generate_response(self, prompt: str, max_new_tokens: int = 1024, temperature: float = 0.5) -> str:
+    def generate_response(self, prompt: str, max_new_tokens: int = 8192, temperature: float = 0.5) -> str:
         """
         Generate response from Qwen model.
         

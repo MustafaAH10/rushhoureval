@@ -33,8 +33,8 @@ class GPT5_5x5_RushHourInference:
 Key Instructions:
 1. A 1-indexed coordinate system is being used where [1,1] is top-left, [5,5] is bottom-right
 2. The car 'C' is always a horizontal 2x1 piece that must exactly cover both cells of the TARGET zone
-3. Each piece can only move UP, DOWN, LEFT, or RIGHT by exactly one square
-4. For multi-cell pieces (car C, 2x1 blockers, 3x1 blockers), the entire piece moves as a unit
+3. Each piece (car or blocker) can only move UP, DOWN, LEFT, or RIGHT by exactly one square
+4. For all pieces (car C, 2x1 blockers, 3x1 blockers), the entire piece moves as a unit
 5. Pieces CANNOT move outside the 5x5 grid or into occupied squares at any instant
 6. Provide your solution in the exact format requested with all coordinates for multi-cell pieces
 
