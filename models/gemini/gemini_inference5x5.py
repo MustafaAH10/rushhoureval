@@ -11,10 +11,10 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 
-class GeminiRushHourInference:
+class Gemini5x5RushHourInference:
     def __init__(self, model_name="gemini-2.5-pro"):
         """
-        Initialize Gemini model for Rush Hour puzzle inference.
+        Initialize Gemini model for 5x5 Rush Hour puzzle inference.
         
         Args:
             model_name: Gemini model name
@@ -25,14 +25,16 @@ class GeminiRushHourInference:
         # Load environment variables
         load_dotenv()
         
-        # System prompt for Rush Hour puzzles
-        self.system_prompt = """You are an expert puzzle solver specializing in Rush Hour puzzles. Your task is to find the optimal sequence of moves to move the car 'C' to the TARGET position.
+        # System prompt for 5x5 Rush Hour puzzles
+        self.system_prompt = """You are an expert puzzle solver specializing in Rush Hour puzzles. Your task is to find the optimal sequence of moves to move the horizontal 2x1 car 'C' so that it exactly covers the 2-cell TARGET zone.
 
 Key Instructions:
-1. A 1-indexed coordinate system is being used
-2. Each piece (car or blocker) can only move UP, DOWN, LEFT, or RIGHT by exactly one square
-3. Pieces CANNOT move outside the grid or into occupied squares at any instant
-4. Provide your solution in the exact format requested
+1. A 1-indexed coordinate system is being used where [1,1] is top-left, [5,5] is bottom-right
+2. The car 'C' is always a horizontal 2x1 piece that must exactly cover both cells of the TARGET zone
+3. Each piece (car or blocker) can only move UP, DOWN, LEFT, or RIGHT by exactly one square
+4. For all pieces (car C, 2x1 blockers, 3x1 blockers), the entire piece moves as a unit
+5. Pieces CANNOT move outside the 5x5 grid or into occupied squares at any instant
+6. Provide your solution in the exact format requested with all coordinates for multi-cell pieces
 
 Be precise with coordinates and piece movements. Think logically about the sequence of moves needed."""
 
@@ -57,7 +59,7 @@ Be precise with coordinates and piece movements. Think logically about the seque
 
     def create_puzzle_prompt_from_json(self, puzzle_metadata: Dict[str, Any]) -> str:
         """
-        Create puzzle prompt using grid from puzzle_state.json
+        Create puzzle prompt using grid from puzzle_state.json for 5x5 puzzles
         
         Args:
             puzzle_metadata: Loaded puzzle_state.json data
@@ -66,58 +68,94 @@ Be precise with coordinates and piece movements. Think logically about the seque
             Puzzle prompt string with JSON grid
         """
         grid = puzzle_metadata.get('grid', [])
-        car_position = puzzle_metadata.get('car_position', [])
-        exit_position = puzzle_metadata.get('exit_position', [])
+        car_positions = puzzle_metadata.get('car_positions', [])
+        target_zone = puzzle_metadata.get('target_zone', [])
         pieces = puzzle_metadata.get('pieces', {})
         
-        if not grid or not car_position or not exit_position:
+        if not grid or not car_positions or not target_zone:
             raise ValueError("Missing required puzzle data in JSON")
         
         # Convert grid to JSON string
         grid_json = json.dumps(grid, separators=(',', ':'))
         
-        # Find blockers
-        blockers = []
-        for piece_name, piece_data in pieces.items():
-            if piece_name != 'C' and piece_data.get('type') == 'blocker':
-                pos = piece_data.get('position', [])
-                if pos:
-                    blockers.append(f"{piece_name} at [{pos[0]},{pos[1]}]")
+        # Find blockers and categorize them
+        blockers_2x1 = []
+        blockers_3x1 = []
         
-        prompt = f"""Task: Solve this 3x3 Rush Hour puzzle - move car "C" from position [{car_position[0]},{car_position[1]}] to the TARGET at position [{exit_position[0]},{exit_position[1]}] given the position of the blockers below.
+        for piece_name, piece_data in pieces.items():
+            if piece_name != 'C':
+                piece_type = piece_data.get('type', '')
+                positions = piece_data.get('positions', [])
+                
+                if '2x1' in piece_type and positions:
+                    positions_str = ", ".join([f"[{p[0]},{p[1]}]" for p in positions])
+                    orientation = "horizontal" if "horizontal" in piece_type else "vertical"
+                    blockers_2x1.append(f"{piece_name} (2x1 {orientation}) at {positions_str}")
+                elif '3x1' in piece_type and positions:
+                    positions_str = ", ".join([f"[{p[0]},{p[1]}]" for p in positions])
+                    orientation = "horizontal" if "horizontal" in piece_type else "vertical"
+                    blockers_3x1.append(f"{piece_name} (3x1 {orientation}) at {positions_str}")
+        
+        # Format car positions and target zone
+        car_positions_str = ", ".join([f"[{p[0]},{p[1]}]" for p in car_positions])
+        target_zone_str = f"[{target_zone[0][0]},{target_zone[0][1]}] and [{target_zone[1][0]},{target_zone[1][1]}]"
+        
+        prompt = f"""Task: Solve this 5x5 Rush Hour puzzle - move the horizontal 2x1 car "C" so that it exactly covers the 2-cell TARGET zone at positions {target_zone_str}.
 
 Current Grid State (JSON format):
 {grid_json}
 
 Current Pieces:
-- Car "C": Position [{car_position[0]},{car_position[1]}]
-- Blockers: {', '.join(blockers) if blockers else 'None'}
-- TARGET: Position [{exit_position[0]},{exit_position[1]}]
+- Car "C" (horizontal 2x1): Currently at positions {car_positions_str}
+- 2x1 Blockers: Two-cell obstacles that can be horizontal or vertical
+  {chr(10).join(f"  - {blocker}" for blocker in blockers_2x1) if blockers_2x1 else "  - None present"}
+- 3x1 Blockers: Three-cell obstacles that can be horizontal or vertical
+  {chr(10).join(f"  - {blocker}" for blocker in blockers_3x1) if blockers_3x1 else "  - None present"}
+- TARGET Zone: Positions {target_zone_str} (horizontal 2-cell zone)
 
-Rules:
-- Any piece can move UP, DOWN, LEFT, or RIGHT by exactly one square
-- Pieces cannot move outside the 3x3 grid
-- Pieces cannot move into occupied squares
-- No two pieces can occupy the same square at any instant
-- Goal: Move car "C" to the TARGET position
+Movement Rules:
+- Any piece can move UP, DOWN, LEFT, or RIGHT by exactly ONE square
+- For multi-cell pieces, the entire piece moves together as a single unit
+- All cells of a piece move simultaneously in the same direction
+- Pieces strictly CANNOT move outside the 5x5 grid boundaries
+- Pieces strictly CANNOT move into occupied squares (collision detection)
+- At ANY instant, there CANNOT be two pieces occupying the same square
+- The same piece can move multiple times consecutively if needed
+- Victory condition: Car "C" must exactly cover BOTH cells of the TARGET zone
 
-Coordinate System: [row,col] format where [1,1] is top-left, [3,3] is bottom-right
+Coordinate System:
+- Use [row,col] format where [1,1] is top-left corner, [5,5] is bottom-right corner
+- Each cell in the grid shows its coordinates as (row,col)
+- For multi-cell pieces, list ALL occupied cell coordinates
 
-Provide your solution as:
+Expected Output Format:
+Wrap your solution in <solution> tags and provide it as a numbered sequence:
+
 <solution>
-Step 1: [PIECE] [start_position] -> [end_position]
-Step 2: [PIECE] [start_position] -> [end_position]
+Step 1: [PIECE] [start_positions] -> [end_positions]
+Step 2: [PIECE] [start_positions] -> [end_positions]
 ...
 </solution>
 
+For ALL pieces, always list complete coordinate sets e.g.:
+- Car "C" (2x1): C [[2,1],[2,2]] -> [[2,2],[2,3]]
+- 2x1 blockers: B1 [[1,1],[1,2]] -> [[1,2],[1,3]]
+- 3x1 blockers: L1 [[3,1],[3,2],[3,3]] -> [[2,1],[2,2],[2,3]]
+
 Example response format:
 <solution>
-Step 1: B2 [2,3] -> [3,3]
-Step 2: B1 [2,2] -> [1,2]
-Step 3: C [2,1] -> [2,2]
-Step 4: C [2,2] -> [2,3]
+Step 1: B2 [[2,2],[2,3]] -> [[2,1],[2,2]]
+Step 2: B3 [[3,2],[3,3]] -> [[3,1],[3,2]]
+Step 3: L1 [[3,4],[4,4],[5,4]] -> [[3,3],[4,3],[5,3]]
+Step 4: L1 [[3,3],[4,3],[5,3]] -> [[2,3],[3,3],[4,3]]
+Step 5: L1 [[2,3],[3,3],[4,3]] -> [[1,3],[2,3],[3,3]]
+Step 6: C [[4,1],[4,2]] -> [[4,2],[4,3]]
+Step 7: C [[4,2],[4,3]] -> [[4,3],[4,4]]
+Step 8: C [[4,3],[4,4]] -> [[4,4],[4,5]]
+Step 9: C [[4,4],[4,5]] -> [[3,4],[3,5]]
 </solution>
-"""
+
+Remember: The goal is to position car "C" so it exactly covers both target cells {target_zone_str}."""
         return prompt
 
     def generate_response(self, prompt: str) -> str:
@@ -158,7 +196,8 @@ Step 4: C [2,2] -> [2,3]
 
     def parse_solution(self, response: str) -> List[str]:
         """
-        Parse solution steps from model response.
+        Parse solution steps from model response for 5x5 puzzles.
+        Handles 2x1 car, 2x1 blockers, and 3x1 blockers.
         
         Args:
             response: Raw model response
@@ -174,13 +213,30 @@ Step 4: C [2,2] -> [2,3]
         if solution_match:
             solution_text = solution_match.group(1).strip()
             
-            # Extract individual steps
-            step_pattern = r'Step\s+\d+:\s*([A-Z0-9]+)\s*\[(\d+),(\d+)\]\s*->\s*\[(\d+),(\d+)\]'
-            steps = re.findall(step_pattern, solution_text, re.IGNORECASE)
+            # Pattern for 2x1 pieces: Step N: PIECE [[r,c],[r,c]] -> [[r,c],[r,c]]
+            pattern_2x1 = r'Step\s+\d+:\s*([A-Z0-9]+)\s*\[\[(\d+),(\d+)\],\[(\d+),(\d+)\]\]\s*->\s*\[\[(\d+),(\d+)\],\[(\d+),(\d+)\]\]'
             
-            for i, (piece, start_row, start_col, end_row, end_col) in enumerate(steps):
-                step_text = f"Step {i+1}: {piece} [{start_row},{start_col}] -> [{end_row},{end_col}]"
-                solution_steps.append(step_text)
+            # Pattern for 3x1 pieces: Step N: PIECE [[r,c],[r,c],[r,c]] -> [[r,c],[r,c],[r,c]]
+            pattern_3x1 = r'Step\s+\d+:\s*([A-Z0-9]+)\s*\[\[(\d+),(\d+)\],\[(\d+),(\d+)\],\[(\d+),(\d+)\]\]\s*->\s*\[\[(\d+),(\d+)\],\[(\d+),(\d+)\],\[(\d+),(\d+)\]\]'
+            
+            # Find all step lines
+            step_lines = re.findall(r'Step\s+\d+:.*', solution_text, re.IGNORECASE)
+            
+            for i, line in enumerate(step_lines):
+                # Try 3x1 pattern first (most specific)
+                match_3x1 = re.search(pattern_3x1, line, re.IGNORECASE)
+                if match_3x1:
+                    piece, sr1, sc1, sr2, sc2, sr3, sc3, er1, ec1, er2, ec2, er3, ec3 = match_3x1.groups()
+                    step_text = f"Step {i+1}: {piece} [[{sr1},{sc1}],[{sr2},{sc2}],[{sr3},{sc3}]] -> [[{er1},{ec1}],[{er2},{ec2}],[{er3},{ec3}]]"
+                    solution_steps.append(step_text)
+                    continue
+                
+                # Try 2x1 pattern
+                match_2x1 = re.search(pattern_2x1, line, re.IGNORECASE)
+                if match_2x1:
+                    piece, sr1, sc1, sr2, sc2, er1, ec1, er2, ec2 = match_2x1.groups()
+                    step_text = f"Step {i+1}: {piece} [[{sr1},{sc1}],[{sr2},{sc2}]] -> [[{er1},{ec1}],[{er2},{ec2}]]"
+                    solution_steps.append(step_text)
         
         return solution_steps
 
@@ -230,7 +286,8 @@ Step 4: C [2,2] -> [2,3]
             'puzzle_info': {
                 'puzzle_num': puzzle_num,
                 'difficulty': metadata.get('puzzle_info', {}).get('difficulty', 'unknown'),
-                'num_blockers': metadata.get('puzzle_info', {}).get('num_blockers', 0),
+                'num_2x1_blockers': metadata.get('puzzle_info', {}).get('num_2x1_blockers', 0),
+                'num_3x1_blockers': metadata.get('puzzle_info', {}).get('num_3x1_blockers', 0),
                 'optimal_solution_length': metadata.get('puzzle_info', {}).get('total_moves_in_solution', 0),
                 'processing_time_seconds': round(processing_time, 2),
                 'timestamp': datetime.now().isoformat()
@@ -247,18 +304,18 @@ Step 4: C [2,2] -> [2,3]
         }
         
         # Save to individual result file in puzzle folder
-        result_file = os.path.join(puzzle_result_folder, f"gemini_puzzle{puzzle_num}_result.json")
+        result_file = os.path.join(puzzle_result_folder, f"gemini_5x5_puzzle{puzzle_num}_result.json")
         with open(result_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
         
         return result_file
 
-    def run_inference_on_dataset(self, dataset_path: str = "../../data/3x3", 
-                                output_path: str = "gemini_results3x3", 
+    def run_inference_on_dataset(self, dataset_path: str = "/root/rushhoureval/data/5x5", 
+                                output_path: str = "gemini_results5x5", 
                                 max_puzzles: Optional[int] = None,
                                 start_puzzle: int = 1):
         """
-        Run inference on all puzzles in the dataset.
+        Run inference on all 5x5 puzzles in the dataset.
         
         Args:
             dataset_path: Path to dataset folder
@@ -279,9 +336,11 @@ Step 4: C [2,2] -> [2,3]
             item_path = os.path.join(dataset_path, item)
             if os.path.isdir(item_path) and item.startswith("puzzle"):
                 try:
-                    puzzle_num = int(item.replace("puzzle", ""))
-                    if puzzle_num >= start_puzzle:
-                        puzzle_folders.append((puzzle_num, item_path))
+                    # Extract puzzle number
+                    base_num = int(item.replace("puzzle", ""))
+                    
+                    if base_num >= start_puzzle:
+                        puzzle_folders.append((base_num, item, item_path))
                 except ValueError:
                     continue
         
@@ -293,16 +352,16 @@ Step 4: C [2,2] -> [2,3]
             puzzle_folders = puzzle_folders[:max_puzzles]
         
         print(f"Found {len(puzzle_folders)} puzzles to process")
-        print(f"Starting inference with Gemini model...")
+        print(f"Starting 5x5 inference with Gemini model...")
         
         # Results storage
         results = []
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         # Process each puzzle
-        for i, (puzzle_num, puzzle_folder) in enumerate(puzzle_folders):
+        for i, (puzzle_num, folder_name, puzzle_folder) in enumerate(puzzle_folders):
             print(f"\n{'='*60}")
-            print(f"Processing Puzzle {puzzle_num} ({i+1}/{len(puzzle_folders)})")
+            print(f"Processing Puzzle {folder_name} ({i+1}/{len(puzzle_folders)})")
             print(f"Folder: {puzzle_folder}")
             
             start_time = time.time()
@@ -311,7 +370,7 @@ Step 4: C [2,2] -> [2,3]
                 # Load puzzle metadata from JSON
                 metadata = self.load_puzzle_metadata(puzzle_folder)
                 if not metadata:
-                    print(f"❌ Skipping puzzle {puzzle_num} - no metadata found")
+                    print(f"❌ Skipping puzzle {folder_name} - no metadata found")
                     continue
                 
                 # Create puzzle prompt from JSON data
@@ -329,7 +388,7 @@ Step 4: C [2,2] -> [2,3]
                 # Save individual puzzle result with all essential data
                 result_file = self.save_puzzle_result(
                     output_path=output_path,
-                    puzzle_num=puzzle_num,
+                    puzzle_num=i+1,  # Use sequential numbering for results
                     prompt=puzzle_prompt,
                     raw_response=raw_response,
                     parsed_solution=parsed_solution,
@@ -339,10 +398,11 @@ Step 4: C [2,2] -> [2,3]
                 
                 # Store for summary
                 result_summary = {
-                    'puzzle_num': puzzle_num,
-                    'puzzle_folder': os.path.basename(puzzle_folder),
+                    'puzzle_num': i+1,
+                    'puzzle_folder': folder_name,
                     'difficulty': metadata.get('puzzle_info', {}).get('difficulty', 'unknown'),
-                    'num_blockers': metadata.get('puzzle_info', {}).get('num_blockers', 0),
+                    'num_2x1_blockers': metadata.get('puzzle_info', {}).get('num_2x1_blockers', 0),
+                    'num_3x1_blockers': metadata.get('puzzle_info', {}).get('num_3x1_blockers', 0),
                     'optimal_solution_length': metadata.get('puzzle_info', {}).get('total_moves_in_solution', 0),
                     'predicted_solution_length': len(parsed_solution),
                     'length_matches_optimal': len(parsed_solution) == metadata.get('puzzle_info', {}).get('total_moves_in_solution', 0),
@@ -367,33 +427,35 @@ Step 4: C [2,2] -> [2,3]
                 time.sleep(1)
             
             except Exception as e:
-                print(f"❌ Error processing puzzle {puzzle_num}: {e}")
+                print(f"❌ Error processing puzzle {folder_name}: {e}")
                 continue
         
         # Save final results summary
         self.save_results_summary(results, output_path, timestamp)
         
-        print(f"\n🎉 Inference complete!")
+        print(f"\n🎉 5x5 Inference complete!")
         print(f"Processed {len(results)} puzzles")
         print(f"Results saved to: {output_path}")
-        print(f"Individual results saved in: {output_path}/puzzle[N]/gemini_puzzle[N]_result.json")
+        print(f"Individual results saved in: {output_path}/puzzle[N]/gemini_5x5_puzzle[N]_result.json")
 
     def save_results_summary(self, results: List[Dict], output_path: str, timestamp: str):
         """Save results summary in multiple formats"""
         
         # Save comprehensive JSON results
-        json_file = os.path.join(output_path, f"gemini_inference_results_{timestamp}.json")
+        json_file = os.path.join(output_path, f"gemini_5x5_inference_results_{timestamp}.json")
         with open(json_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
         
         # Save CSV summary
-        csv_file = os.path.join(output_path, f"gemini_inference_summary_{timestamp}.csv")
+        csv_file = os.path.join(output_path, f"gemini_5x5_inference_summary_{timestamp}.csv")
         with open(csv_file, 'w', newline='', encoding='utf-8') as f:
             if results:
                 fieldnames = [
-                    'puzzle_num', 'puzzle_folder', 'difficulty', 'num_blockers',
+                    'puzzle_num', 'puzzle_folder', 'difficulty', 
+                    'num_2x1_blockers', 'num_3x1_blockers',
                     'optimal_solution_length', 'predicted_solution_length', 
-                    'length_matches_optimal', 'solution_found', 'processing_time_seconds', 'timestamp'
+                    'length_matches_optimal', 'solution_found', 
+                    'processing_time_seconds', 'timestamp'
                 ]
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
@@ -404,7 +466,7 @@ Step 4: C [2,2] -> [2,3]
         print(f"📊 Results summary saved to: {csv_file}")
 
     def analyze_results(self, results: List[Dict]) -> Dict[str, Any]:
-        """Analyze inference results and compute metrics"""
+        """Analyze inference results and compute metrics for 5x5 puzzles"""
         if not results:
             return {}
         
@@ -424,6 +486,21 @@ Step 4: C [2,2] -> [2,3]
             if result.get('solution_found', False):
                 difficulty_stats[diff]['solutions_found'] += 1
         
+        # Blocker complexity analysis
+        blocker_stats = {}
+        for result in results:
+            num_2x1 = result.get('num_2x1_blockers', 0)
+            num_3x1 = result.get('num_3x1_blockers', 0)
+            complexity_key = f"{num_2x1}x2+{num_3x1}x3"
+            
+            if complexity_key not in blocker_stats:
+                blocker_stats[complexity_key] = {'total': 0, 'optimal_matches': 0, 'solutions_found': 0}
+            blocker_stats[complexity_key]['total'] += 1
+            if result.get('length_matches_optimal', False):
+                blocker_stats[complexity_key]['optimal_matches'] += 1
+            if result.get('solution_found', False):
+                blocker_stats[complexity_key]['solutions_found'] += 1
+        
         # Processing time stats
         times = [r['processing_time_seconds'] for r in results]
         avg_time = sum(times) / len(times) if times else 0
@@ -435,6 +512,7 @@ Step 4: C [2,2] -> [2,3]
             'optimal_length_matches': optimal_length_matches,
             'optimal_length_accuracy': optimal_length_matches / total_puzzles if total_puzzles > 0 else 0,
             'difficulty_breakdown': difficulty_stats,
+            'blocker_complexity_breakdown': blocker_stats,
             'average_processing_time_seconds': round(avg_time, 2),
             'total_processing_time_seconds': round(sum(times), 2)
         }
@@ -444,11 +522,11 @@ Step 4: C [2,2] -> [2,3]
 
 def main():
     """Main execution function"""
-    print("🚀 Starting Gemini 2.5 Pro Rush Hour Inference")
+    print("🚀 Starting Gemini 2.5 Pro 5x5 Rush Hour Inference")
     print("=" * 60)
     
     # Initialize inference system
-    inference = GeminiRushHourInference(
+    inference = Gemini5x5RushHourInference(
         model_name="gemini-2.5-pro"
     )
     
@@ -460,8 +538,8 @@ def main():
         return
     
     # Configuration
-    dataset_path = "/home/mustafaah/rushhoureval/data/3x3"
-    output_path = "results3x3"
+    dataset_path = "/home/mustafaah/rushhoureval/data/5x5"
+    output_path = "results5x5"
     
     # Create output directory
     os.makedirs(output_path, exist_ok=True)
@@ -472,7 +550,7 @@ def main():
     # Check if dataset exists
     if not os.path.exists(dataset_path):
         print(f"❌ Dataset not found at {dataset_path}")
-        print("Please run the puzzle generator first to create the dataset.")
+        print("Please run the 5x5 puzzle generator first to create the dataset.")
         return
     
     # Run inference on all puzzles
@@ -483,7 +561,7 @@ def main():
         start_puzzle=1
     )
     
-    print("✅ Inference pipeline completed!")
+    print("✅ 5x5 Inference pipeline completed!")
 
 
 if __name__ == "__main__":
