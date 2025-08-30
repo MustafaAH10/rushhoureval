@@ -34,6 +34,23 @@
       "legal_optimal_percentage": 28.000000000000004,
       "legal_accomplishes_target_percentage": 45.33333333333333,
       "legal_optimal_target_percentage": 28.000000000000004
+    },
+    "deepseekv3": {
+      "model_name": "deepseekv3",
+      "grid_size": "5x5",
+      "total_puzzles": 150,
+      "illegal_moves": 56,
+      "legal_no_target": 19,
+      "legal_suboptimal_target": 24,
+      "legal_optimal_target": 51,
+      "parsing_failures": 18,
+      "detailed_results": [],
+      "illegal_percentage": 37.333333333333336,
+      "legal_no_target_percentage": 12.666666666666668,
+      "legal_suboptimal_percentage": 16.0,
+      "legal_optimal_percentage": 34.0,
+      "legal_accomplishes_target_percentage": 50.0,
+      "legal_optimal_target_percentage": 34.0
     }
   }
 }

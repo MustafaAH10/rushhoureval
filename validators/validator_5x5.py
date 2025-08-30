@@ -270,7 +270,8 @@ def main():
     RESULTS_PATH = "/home/mustafaah/Desktop/FINAL_DATA"
     MODEL_NAMES = [
         "gpt5",
-        "gemini"
+        "gemini",
+        "deepseekv3"
     ]  # Update as needed
     MAX_PUZZLES = 150
     
